@@ -22,13 +22,10 @@ def get_random_user_agent(user_agent_list):
 
 # Retrieve User-Agent List From ScrapeOps
 user_agent_list = get_user_agent_list()
-
+headers = {'User-Agent': get_random_user_agent(user_agent_list)}
 
 class TmdbSpider(scrapy.Spider):
     name = 'tmdb_spider'
-
-    # change user agent to overcome 403 error
-    headers = {'User-Agent': get_random_user_agent(user_agent_list)}
 
     def start_requests(self):
         '''
@@ -39,7 +36,7 @@ class TmdbSpider(scrapy.Spider):
 
         start_urls = ['https://www.themoviedb.org/movie/78-blade-runner/']
         for url in start_urls:
-            yield scrapy.Request(url=url, headers=self.headers)
+            yield scrapy.Request(url=url, headers=headers)
 
     def parse(self, response):
         '''
@@ -50,7 +47,7 @@ class TmdbSpider(scrapy.Spider):
 
         cast_page = response.css("p.new_button a::attr(href)").get()
         yield scrapy.Request(url = "https://www.themoviedb.org" + cast_page,
-                            headers=self.headers,
+                            headers=headers,
                             callback=self.parse_full_credits)
 
     def parse_full_credits(self, response):
@@ -63,7 +60,7 @@ class TmdbSpider(scrapy.Spider):
         links = response.css("ol.people.credits div.info a::attr(href)").getall()
         for link in links:  
             yield scrapy.Request(url = "https://www.themoviedb.org" + link,
-                                headers=self.headers,
+                                headers=headers,
                                 callback=self.parse_actor_page)
 
     def parse_actor_page(self, response):
