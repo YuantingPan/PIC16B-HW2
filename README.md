@@ -16,7 +16,7 @@ In the blog you can find a detailed description of the project and a guidance ab
 
 - [**results.csv**](https://github.com/YuantingPan/PIC16B-HW2/blob/main/TMDB_scraper/results.csv)
 
-  This is the samle result file after crawling the TMDB page of [*Pulp Fiction*](https://www.themoviedb.org/movie/680-pulp-fiction)
+  This is the samle result file after crawling the TMDB page of [*Pulp Fiction*](https://www.themoviedb.org/movie/680-pulp-fiction).
 
 - [**recommendation.ipynb**](https://github.com/YuantingPan/PIC16B-HW2/blob/main/TMDB_scraper/recommendation.ipynb)
 
