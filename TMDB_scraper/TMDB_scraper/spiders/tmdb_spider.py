@@ -26,6 +26,7 @@ headers = {'User-Agent': get_random_user_agent(user_agent_list)}
 
 class TmdbSpider(scrapy.Spider):
     name = 'tmdb_spider'
+    start_urls = ['https://www.themoviedb.org/movie/680-pulp-fiction']
 
     def start_requests(self):
         '''
@@ -34,8 +35,7 @@ class TmdbSpider(scrapy.Spider):
             Navigate to the movie page.
         '''
 
-        start_urls = ['https://www.themoviedb.org/movie/78-blade-runner/']
-        for url in start_urls:
+        for url in self.start_urls:
             yield scrapy.Request(url=url, headers=headers)
 
     def parse(self, response):
@@ -45,9 +45,10 @@ class TmdbSpider(scrapy.Spider):
             Navigate to FULL CAST & CREW page.
         '''
 
+        # Get the hyperlink reference (on the Full Cast & Crew button) to the Cast page
         cast_page = response.css("p.new_button a::attr(href)").get()
         yield scrapy.Request(url = "https://www.themoviedb.org" + cast_page,
-                            headers=headers,
+                            headers=headers,    # user agent
                             callback=self.parse_full_credits)
 
     def parse_full_credits(self, response):
@@ -57,10 +58,11 @@ class TmdbSpider(scrapy.Spider):
             Navigate to each of the ACTOR pages.
         '''
 
-        links = response.css("ol.people.credits div.info a::attr(href)").getall()
+        # Get the hyperlink references of all the actors
+        links = response.css("ol[class='people credits '] p[class!='character'] a::attr(href)").getall()
         for link in links:  
             yield scrapy.Request(url = "https://www.themoviedb.org" + link,
-                                headers=headers,
+                                headers=headers,    # user agent
                                 callback=self.parse_actor_page)
 
     def parse_actor_page(self, response):
@@ -70,14 +72,11 @@ class TmdbSpider(scrapy.Spider):
             Output dictionaries containing the actor name and the movie name.
         '''
 
+        # Get the name of actor
         name = response.css("h2.title a::text").get()
-        route = \
-            """
-            div.credits_list table.card.credits table.credit_group 
-            td.role.false.account_adult_false.item_adult_false 
-            a.tooltip bdi::text
-            """
-        movies = response.css(route).getall()
+        # Get the names of all movies/shows the actor participated in
+        movies = response.css("table.credit_group a.tooltip bdi::text").getall()
+        # Yield the results as dictionary
         for movie in movies:
             yield{"name":name,
                   "movie":movie}
